@@ -1,0 +1,8 @@
+FROM eclipse-temurin:21-jdk-jammy@sha256:e0c60c487345d1dc9d0fc7b6f0496f3cc941e5132e09296cc17a6decc71b902b
+
+WORKDIR /runner
+COPY Json.java Harness.java Runner.java /runner/
+RUN javac --add-modules jdk.jdi -g -d /runner /runner/Json.java /runner/Harness.java /runner/Runner.java
+USER 65534:65534
+ENV HOME=/tmp
+ENTRYPOINT ["java", "--add-modules", "jdk.jdi", "-cp", "/runner", "Runner"]

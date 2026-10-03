@@ -164,3 +164,7 @@ The launcher prints the runner health URL; the endpoint defaults to port 8765 an
 - [prd.md](./prd.md) — user goals and functional requirements.
 - [spec.md](./spec.md) — current app/trace implementation contracts.
 - [SYSTEM_DESIGN.md](./SYSTEM_DESIGN.md) — local execution architecture and future language rollout.
+
+## License
+
+Unless otherwise noted, project-authored source code is licensed under the MIT License; see [LICENSE](./LICENSE). Third-party packages and assets may be subject to separate licenses.

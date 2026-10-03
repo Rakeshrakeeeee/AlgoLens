@@ -42,13 +42,13 @@ Build mode: fast (learner requested completion as soon as possible)
 
 - [ ] Learning activity complete — guided route, focused alternative, prior practice connected, or brief recap
 - [ ] Optional edit and transfer reflection addressed — offered/declined/already covered/not applicable as appropriate
-- [ ] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
+- [x] `devpost/app-map.html` generated from finished code, checked, and shown, including a project-grounded practice to reuse
 
-Activity and evidence: [record after final review]
-Route and stops: [record actual paths and symbols]
-Edit outcome: [record actual result]
-Reflection: [record whether offered, answered, or declined; personal response stays in ignored learner profile]
-Activity mode: [record live app/editor or static fallback]
+Activity and evidence: Agent ran the live app and a Java loop trace through the local sandbox; 52 frontend tests and the production build passed. The learner delegated review, so no learner-led tour is claimed.
+Route and stops: Reference route only — `src/ExecutionPanel.tsx > runCode()`, `runner/server.py > Handler.do_POST()/run_in_sandbox()`, and `src/execution-explanations.ts > describeRuntimeStep()/explainSkippedJavaLoop()`. Not interactively toured by the learner.
+Edit outcome: No optional learning edit offered or attempted; only planned implementation changes were made.
+Reflection: Not offered; personal reflection remains outstanding and belongs in the ignored learner profile.
+Activity mode: Agent-run live app and editor verification plus offline HTML map preview; learner walkthrough outstanding.
 
 ## Revisions
 

@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>AlgoLens — App Map</title>
+  <style>
+    :root { color-scheme:dark; --bg:#10151b; --panel:#19212a; --line:#35424f; --text:#edf2f7; --muted:#b0bdc8; --accent:#86b8ff; --green:#8bd7ad; }
+    * { box-sizing:border-box; }
+    body { margin:0; background:var(--bg); color:var(--text); font:16px/1.6 system-ui,Segoe UI,sans-serif; }
+    main { width:min(980px,calc(100% - 28px)); margin:28px auto 56px; }
+    header, section { margin:14px 0; padding:20px; border:1px solid var(--line); border-radius:14px; background:var(--panel); }
+    h1,h2,h3 { line-height:1.25; }
+    h1 { margin:4px 0 10px; font-size:clamp(1.8rem,5vw,2.6rem); }
+    h2 { margin:0 0 12px; font-size:1.3rem; }
+    h3 { margin:14px 0 4px; font-size:1.05rem; }
+    p,li { max-width:78ch; }
+    .eyebrow { color:var(--green); font-size:.82rem; letter-spacing:.08em; text-transform:uppercase; }
+    .muted { color:var(--muted); }
+    .diagram { overflow-x:auto; }
+    svg { min-width:650px; width:100%; height:auto; }
+    .box { fill:#222d38; stroke:#526578; stroke-width:2; }
+    .label { fill:var(--text); font:600 14px system-ui,sans-serif; }
+    .small { fill:var(--muted); font:12px system-ui,sans-serif; }
+    .arrow { stroke:var(--accent); stroke-width:2.5; fill:none; marker-end:url(#arrow); }
+    code { color:var(--green); overflow-wrap:anywhere; }
+    a { color:var(--accent); }
+    a:focus-visible,summary:focus-visible { outline:3px solid var(--accent); outline-offset:3px; border-radius:3px; }
+    .route { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:12px; }
+    .stop { padding:14px; border:1px solid var(--line); border-radius:10px; }
+    .stop p { margin:7px 0; }
+    .status { display:inline-block; padding:3px 9px; border:1px solid var(--line); border-radius:99px; font-size:.84rem; color:var(--green); }
+    details { margin:10px 0; padding:10px 12px; border:1px solid var(--line); border-radius:9px; }
+    summary { cursor:pointer; font-weight:650; }
+    .warning { border-left:3px solid var(--accent); padding:9px 12px; background:color-mix(in srgb,var(--accent) 10%,transparent); }
+    @media (prefers-color-scheme:light) {
+      :root { color-scheme:light; --bg:#f4f7fa; --panel:#fff; --line:#d5dee7; --text:#172230; --muted:#526476; --accent:#245cbb; --green:#167148; }
+      .box { fill:#edf3f8; stroke:#8298aa; }
+      .label { fill:var(--text); }
+      .small { fill:var(--muted); }
+    }
+    @media (max-width:600px) { main { width:calc(100% - 16px); margin:8px auto 28px; } header,section { padding:15px; } }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <span class="eyebrow">AlgoLens · developer map</span>
+    <h1>Follow one code run</h1>
+    <p>AlgoLens helps a learner see how a supported method changes while it runs. Pattern simulation is modeled in the browser; Code execution runs a supported Python or Java method in a local Docker sandbox. These are separate modes.</p>
+    <span class="status">Reference route — not an interactive learner tour</span>
+    <p class="muted">This map describes the implementation at commit <code>1607cc5</code>. The app has since been tested with a real Java trace. This offline HTML file is a snapshot and may drift as code changes.</p>
+  </header>
+
+  <section aria-labelledby="flow-title">
+    <h2 id="flow-title">From Run button to explanation</h2>
+    <div class="diagram">
+      <svg viewBox="0 0 950 240" role="img" aria-labelledby="flow-name flow-desc">
+        <title id="flow-name">Actual code execution path</title>
+        <desc id="flow-desc">The Run button validates and posts code from the React panel to the local Python API. The API runs it in a temporary Docker container and returns observed events. The browser selects a trace event and a local helper explains only supported evidence.</desc>
+        <defs><marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3z" fill="var(--accent)"/></marker></defs>
+        <rect class="box" x="12" y="72" width="205" height="92" rx="12"/>
+        <text class="label" x="114" y="105" text-anchor="middle">Run and visualize</text>
+        <text class="small" x="114" y="129" text-anchor="middle">ExecutionPanel.tsx</text>
+        <rect class="box" x="265" y="72" width="190" height="92" rx="12"/>
+        <text class="label" x="360" y="105" text-anchor="middle">Local API</text>
+        <text class="small" x="360" y="129" text-anchor="middle">runner/server.py</text>
+        <rect class="box" x="503" y="72" width="190" height="92" rx="12"/>
+        <text class="label" x="598" y="105" text-anchor="middle">Docker sandbox</text>
+        <text class="small" x="598" y="129" text-anchor="middle">bounded real trace</text>
+        <rect class="box" x="741" y="72" width="197" height="92" rx="12"/>
+        <text class="label" x="839" y="105" text-anchor="middle">Step explanation</text>
+        <text class="small" x="839" y="129" text-anchor="middle">execution-explanations.ts</text>
+        <path class="arrow" d="M217 118 L260 118"/>
+        <path class="arrow" d="M455 118 L498 118"/>
+        <path class="arrow" d="M693 118 L736 118"/>
+        <text class="small" x="240" y="99" text-anchor="middle">JSON</text>
+        <text class="small" x="478" y="99" text-anchor="middle">source + args</text>
+        <text class="small" x="717" y="99" text-anchor="middle">events</text>
+        <text class="small" x="475" y="207" text-anchor="middle">Source and inputs stay on the local machine; Pattern simulation uses a separate browser-only path.</text>
+      </svg>
+    </div>
+    <noscript><p>Flow: the Run button posts checked source and JSON inputs to the loopback API; the API runs them in a restricted Docker container, returns runtime events, and the browser displays a trace-grounded explanation.</p></noscript>
+  </section>
+
+  <section aria-labelledby="route-title">
+    <h2 id="route-title">A three-stop code route</h2>
+    <p class="muted">Use VS Code Quick Open (Ctrl+P) to open each path; search for the named function.</p>
+    <div class="route">
+      <article class="stop">
+        <span class="eyebrow">1 · Input and result</span>
+        <h3><code>src/ExecutionPanel.tsx</code></h3>
+        <p>Find <code>runCode()</code>. It validates the JSON arguments, clears old trace data, sends the request to <code>/api/trace</code>, and stores the returned events for playback.</p>
+      </article>
+      <article class="stop">
+        <span class="eyebrow">2 · Real execution</span>
+        <h3><code>runner/server.py</code></h3>
+        <p>Find <code>Handler.do_POST()</code> and <code>run_in_sandbox()</code>. The local service validates requests and runs the selected method in a fresh restricted Docker container.</p>
+      </article>
+      <article class="stop">
+        <span class="eyebrow">3 · Evidence and wording</span>
+        <h3><code>src/execution-explanations.ts</code></h3>
+        <p>Find <code>describeRuntimeStep()</code> and <code>explainSkippedJavaLoop()</code>. The helper uses observed events and a narrow condition grammar; its tests include supported and rejected examples.</p>
+      </article>
+    </div>
+    <p class="warning"><strong>Boundary:</strong> this helper is deterministic, not an AI debugger. Unsupported conditions get a neutral message rather than an invented diagnosis.</p>
+  </section>
+
+  <section aria-labelledby="changes-title">
+    <h2 id="changes-title">To change this, start here</h2>
+    <details>
+      <summary>Change step-explanation wording or add a safe case</summary>
+      <p>Start in <code>src/execution-explanations.ts</code>, then add a focused test in <code>src/execution-explanations.test.ts</code>. Keep unsupported forms on the non-diagnostic fallback path; never evaluate pasted code.</p>
+    </details>
+    <details>
+      <summary>Change what appears beside a selected runtime step</summary>
+      <p>Start in <code>src/ExecutionPanel.tsx</code> at the runtime trace panel. Keep the displayed explanation, source line, and values tied to the same selected event position.</p>
+    </details>
+    <details>
+      <summary>Change startup ports or process messages</summary>
+      <p>Start in <code>scripts/start-local.mjs</code>. The proxy target is wired from <code>ALGOLENS_RUNNER_PORT</code> in <code>vite.config.ts</code>; keep Vite on the runner's allowed local origins.</p>
+    </details>
+  </section>
+
+  <section aria-labelledby="practice-title">
+    <h2 id="practice-title">A practice to reuse</h2>
+    <p>This project turned “explain why a loop didn't start” into a bounded requirement: explain only when an observed trace and supported condition prove the cause, otherwise avoid diagnosis. The corresponding implementation is <code>src/execution-explanations.ts</code>; tests in <code>src/execution-explanations.test.ts</code> cover a proven empty-array loop and an unsupported condition.</p>
+    <p>For another project, make the claim depend on evidence it can actually observe, then add one test for the supported case and one for the honest fallback.</p>
+  </section>
+
+  <section aria-labelledby="run-title">
+    <h2 id="run-title">Run the app and reopen this map</h2>
+    <ol>
+      <li>In the project folder, run <code>npm run start:local</code>.</li>
+      <li>Open the local URL printed in the terminal. Docker Desktop is needed for actual code execution; Pattern simulation remains browser-only.</li>
+      <li>Open <code>devpost/app-map.html</code> in a browser for this offline reference. Refresh it after source changes if you need an updated map.</li>
+    </ol>
+    <p class="muted">The tested Java trace is an agent-run verification, not a learner-completed code tour. No claim is made that the reference route has been interactively toured.</p>
+  </section>
+</main>
+</body>
+</html>

@@ -1,5 +1,9 @@
 # AlgoLens
 
+## Demo video
+
+[Watch the 2:07 screen-recording demo](https://github.com/Rakeshrakeeeee/AlgoLens/releases/tag/demo-2026-10-03).
+
 AlgoLens is a local-first algorithm learning visualizer. It now has two clearly separated modes:
 
 - **Pattern simulator:** deterministic, hand-modelled traces for array, two-pointer, sorting, and binary-search examples. It does not execute the source code in this mode.

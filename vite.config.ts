@@ -1,6 +1,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
+import { env } from "node:process";
 
+const runnerPort = Number.parseInt(env.ALGOLENS_RUNNER_PORT ?? "", 10) || 8765;
 const securityHeaders = {
   "Content-Security-Policy": [
     "default-src 'self'",
@@ -26,7 +28,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://127.0.0.1:8765",
+        target: `http://127.0.0.1:${runnerPort}`,
         changeOrigin: true,
       },
     },
@@ -42,7 +44,7 @@ export default defineConfig({
     headers: securityHeaders,
     proxy: {
       "/api": {
-        target: "http://127.0.0.1:8765",
+        target: `http://127.0.0.1:${runnerPort}`,
         changeOrigin: true,
       },
     },

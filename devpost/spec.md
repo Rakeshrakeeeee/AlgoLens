@@ -9,7 +9,7 @@ status: approved
 
 AlgoLens has two different ways to learn from an algorithm. **Pattern simulation** runs a small, known example in the browser and labels it as a simulation; it never runs the pasted source. **Code execution** sends a supported method and its JSON inputs to a local Python service. That service asks Docker to run the method in a temporary, restricted container, then returns the real line, variable, and collection snapshots it observed.
 
-The React screen keeps the returned steps and moves through them for playback; going backward does not run the method again. A local explanation helper will describe supported changes using those snapshots and the source line. It may explain a simple condition only when its small, explicit condition grammar and the captured values prove the result. Otherwise it says it cannot determine the cause. No cloud AI is needed for this proof of concept.
+The React screen keeps the returned steps and moves through them for playback; going backward does not run the method again. A local explanation helper describes captured value changes using those snapshots and the source line. It explains a skipped loop only when a small, explicit condition grammar and captured values prove the result. Otherwise it sticks to what the trace shows instead of guessing at the cause. No cloud AI is needed for this proof of concept.
 
 This keeps the existing app and its safety boundary, while making the local startup flow easier. It is deliberately not a general Java/Python interpreter or a public code-hosting service.
 
@@ -31,7 +31,7 @@ The pattern-simulation route skips the local service: the typed TypeScript engin
 | Part | Technology | Why it fits / documentation |
 |---|---|---|
 | Browser UI | React 19, TypeScript 6, Vite 7 | Reuses the existing responsive app and typed trace engine. [React](https://react.dev/), [TypeScript](https://www.typescriptlang.org/docs/), [Vite](https://vite.dev/guide/) |
-| Local startup coordinator | Node.js built-in child-process and networking APIs; planned `scripts/start-local.mjs` | Adds a single cross-platform command without another package. [Node.js child_process](https://nodejs.org/api/child_process.html) |
+| Local startup coordinator | Node.js built-in child-process and networking APIs; `scripts/start-local.mjs` | Starts both local services with one cross-platform command and no additional package. [Node.js child_process](https://nodejs.org/api/child_process.html) |
 | Local API and sandbox coordinator | Python 3.10+ standard library | Reuses the current loopback HTTP service and avoids adding Python packages. [Python http.server](https://docs.python.org/3/library/http.server.html), [Python subprocess](https://docs.python.org/3/library/subprocess.html) |
 | Actual execution | Docker Desktop with Linux containers; pinned Python 3.13 and Eclipse Temurin Java 21 images | Keeps submitted code off the host process. Containers are defense in depth, not a promise that arbitrary hostile code is harmless. [Docker Desktop on Windows](https://docs.docker.com/desktop/setup/install/windows-install/), [Docker security](https://docs.docker.com/engine/security/) |
 | Trace capture | Python `sys.settrace`; Java Debug Interface (JDI) | Captures real supported runtime events rather than inferring a full execution from source. [Python tracing](https://docs.python.org/3/library/sys.html#sys.settrace), [Java 21 JDI](https://docs.oracle.com/en/java/javase/21/docs/api/jdk.jdi/module-summary.html) |
@@ -41,13 +41,13 @@ The installed development environment has Node.js 22.16 and npm 11; the project 
 
 ## Where It Runs and How Someone Tries It
 
-AlgoLens runs locally on Windows in a browser. The intended development prerequisites are Node.js/npm, Python 3.10 or later available as `python`, and Docker Desktop using its Linux-container engine for actual Python/Java runs. Docker must stay running during execution. Pattern simulation remains available when Docker is unavailable.
+AlgoLens runs locally on Windows in a browser. The prerequisites are Node.js/npm and Python 3.10 or later available as `python`; Docker Desktop using its Linux-container engine is required only for actual Python/Java runs. Docker must stay running during execution. Pattern simulation remains available when Docker is unavailable.
 
-**Target after the planned startup improvement:** run `npm install`, then `npm run start:local` from the project root. The new launcher will start the loopback runner and Vite together, report startup problems, and stop both processes when the terminal is closed with Ctrl+C. It must not block the UI if Docker is missing: the pattern simulator should remain usable, and code execution should show an unavailable message without falling back to running pasted code on Windows.
+From the project root, run `npm install` on a fresh checkout, then run `npm run start:local`. The launcher starts the loopback runner and Vite together, reports startup problems, and stops both processes when the terminal is closed with Ctrl+C. It checks supported local ports (Vite 5173/5174 and runner 8765–8774), so it can coexist with another local development session. Docker offline does not block UI startup: the pattern simulator remains usable, and code execution shows an unavailable message without falling back to running pasted code on Windows.
 
 Open the local URL Vite prints, normally `http://localhost:5173/`. Choose **Code execution** for a real supported Python/Java trace or **Pattern simulation** for a clearly labeled modeled example. For a reliable recording, use a short Java array/binary-search example, enter its JSON arguments, run it, and step through the result and explanation.
 
-**Current commands, until the planned launcher is implemented:** in one PowerShell terminal run `npm run runner`; in another run `npm run dev`; then open the Vite URL above. Do not run pasted source directly on the host as a workaround for Docker being unavailable.
+For troubleshooting, the services can still be started separately: run `npm run runner` in one PowerShell terminal and `npm run dev` in another. Do not run pasted source directly on the host as a workaround for Docker being unavailable.
 
 No hosted deployment is part of the proof of concept. A short demo video and a public GitHub repository are required later for submission; deployment does not replace either. See the actual submission form for its current video constraints.
 
@@ -77,9 +77,9 @@ Collects the source, language, selected method, JSON arguments, and optional exp
 
 PRD refs: `prd.md > Running a supported method`, `prd.md > Explaining errors and limits`, `prd.md > States and Boundaries`.
 
-### Runtime explanation helper — planned `src/execution-explanations.ts`
+### Runtime explanation helper — `src/execution-explanations.ts`
 
-Formats a plain-English step from the current and previous runtime events, source line, and captured values. A small, tested parser may interpret only simple supported conditions using literals, captured scalar locals, basic comparisons/boolean operators, and bounded array-length forms. It must never use `eval`, call a submitted method, or claim a diagnosis without sufficient evidence. If the condition or event cannot be interpreted safely, show what the trace does establish and say the cause could not be determined.
+Formats a plain-English step from the current and previous runtime events, source line, and captured values. It reports only captured local-value changes by default. Its additional condition recognizers are deliberately narrow: an empty Python named iterable when the next captured line leaves its block, and a Java `for` loop with a literal initial value, simple comparison, literal or named array-length bound, and a supported increment. It computes the condition directly from literals and captured collection lengths; it never evaluates submitted source or calls a submitted method. Any other condition or ambiguous event gets a neutral state description rather than an inferred diagnosis.
 
 PRD refs: `prd.md > Running a supported method`, `prd.md > Explaining errors and limits`.
 
@@ -95,15 +95,15 @@ The Python runner uses a tracing hook. The Java runner compiles and invokes the 
 
 PRD refs: `prd.md > Running a supported method`, `prd.md > Explaining errors and limits`.
 
-### Local startup coordinator — planned `scripts/start-local.mjs`
+### Local startup coordinator — `scripts/start-local.mjs`
 
-Starts the Python runner and Vite from one command, waits for the local services to become available, prints the app URL, reports missing prerequisites clearly, and shuts down the child processes together. Docker unavailability must not prevent the browser app from starting.
+Starts the Python runner and Vite from one command, chooses from documented loopback ports, waits for the runner to listen and the app to respond, prints app and health URLs, reports missing prerequisites clearly, and shuts down the child processes together. Docker health is checked after the app starts so a stopped Docker engine cannot block Pattern simulation. The runner port is passed to Vite so its same-origin proxy targets the selected loopback service.
 
 PRD refs: `prd.md > The Core Journey`, `prd.md > States and Boundaries`.
 
 ### Same-origin development proxy — `vite.config.ts`
 
-Serves the UI and forwards `/api` requests to the loopback runner. It keeps the browser request same-origin and adds the existing security headers. It is a local development/preview arrangement, not a public production hosting service.
+Serves the UI and forwards `/api` requests to the loopback runner port selected by the startup coordinator (default 8765). It keeps the browser request same-origin and adds the existing security headers. It is a local development/preview arrangement, not a public production hosting service.
 
 PRD refs: `prd.md > Running a supported method`, `prd.md > States and Boundaries`.
 
@@ -114,14 +114,14 @@ PRD refs: `prd.md > Running a supported method`, `prd.md > States and Boundaries
 | Source, language, method, arguments, expected result | React component memory in the current browser page; edited directly in the workbench | Not saved; refreshing or closing the tab loses the current values |
 | Pattern trace and explanation | Typed immutable step list returned by `src/engine.ts`, held in React memory; playback changes only the selected step index | Not saved; changing source/input clears it |
 | Runtime trace and explanation | Structured response returned from the loopback API and held in the browser page; playback selects a position in the event list | Not saved; edits/reruns invalidate it, and refresh/close discards it |
-| One execution request | Sent from the browser to `127.0.0.1` as JSON, validated by the runner, passed to a temporary container, then discarded | Not persisted or logged by AlgoLens |
+| One execution request | Sent from the browser to `127.0.0.1` as JSON through Vite, validated by the runner on its selected loopback port, passed to a temporary container, then discarded | Not persisted or logged by AlgoLens |
 | Theme | Browser `localStorage` key `algolens-theme` | Survives refresh on that browser; it is the only user preference stored |
 
 There is no application database, account, or remote AI/API service.
 
 ## File Structure
 
-This is the existing project layout plus the two files planned above and the checklist that `5-build` will create. Generated dependency and build folders are omitted.
+This is the current project layout plus the checklist and visual spec companion. Generated dependency and build folders are omitted.
 
 ```text
 Code_Visualizer/
@@ -135,15 +135,15 @@ Code_Visualizer/
 │   └── checklist.md                 # Ordered build slices; created in 5-build
 ├── public/                          # App icons and static assets
 ├── scripts/
-│   └── start-local.mjs              # Planned one-command local launcher
+│   └── start-local.mjs              # Starts local runner and Vite together
 ├── src/
 │   ├── assets/                      # Existing images and starter assets
 │   ├── main.tsx                     # Workbench and Pattern simulator UI
 │   ├── ExecutionPanel.tsx           # Actual code execution UI
 │   ├── engine.ts                    # Deterministic pattern recognition and traces
 │   ├── engine.test.ts               # Pattern engine tests
-│   ├── execution-explanations.ts    # Planned evidence-based runtime wording
-│   ├── execution-explanations.test.ts # Planned condition/explanation tests
+│   ├── execution-explanations.ts    # Evidence-based runtime wording
+│   ├── execution-explanations.test.ts # Condition/explanation tests
 │   └── styles.css                   # Workbench styling
 ├── runner/
 │   ├── server.py                    # Loopback API and container lifecycle
@@ -170,7 +170,7 @@ The root `spec.md` is an existing technical note about the original pattern-simu
 
 - **No hosted APIs, model calls, database, or API keys.**
 - **Docker Desktop** is a local dependency for actual code execution. The runner invokes the local Docker CLI to inspect/build pinned images and create/start/remove a container. Build-time image downloads require internet access once; submitted source and inputs are not sent to a hosted service. [Docker Desktop documentation](https://docs.docker.com/desktop/).
-- **Vite's local proxy** forwards `/api` to `http://127.0.0.1:8765`; no third-party network endpoint is called by the app.
+- **Vite's local proxy** forwards `/api` to the runner port selected by the launcher (8765 by default); no third-party network endpoint is called by the app.
 - **npm packages** are installed from the existing lockfile. `npm install` needs registry access when packages are not already cached; the browser app itself does not call the npm registry.
 
 ## Important Failure Modes
@@ -179,7 +179,7 @@ The root `spec.md` is an existing technical note about the original pattern-simu
 - **Unsupported method, invalid JSON, or runtime/compile error** → show a useful message for that attempt, clear stale trace data, and allow edits/retry.
 - **Execution exceeds a limit or trace is clipped** → stop/clean up the run and mark the trace incomplete; do not present it as a complete execution.
 - **A condition or state change is outside the explanation helper's safe subset** → show the observed event/state and explicitly say the cause could not be determined; do not infer a bug.
-- **A local service fails to start** → the one-command launcher reports which process failed and exits cleanly without leaving the other process orphaned.
+- **A local service fails to start or its supported ports are occupied** → the one-command launcher reports the failing service/port and stops any child it already started.
 
 ## What Was Simplified and Why
 
@@ -196,10 +196,11 @@ The root `spec.md` is an existing technical note about the original pattern-simu
 
 - **Learner-approved:** keep the existing React/Vite app, local Python runner, and Docker-isolated Python/Java execution rather than redesigning the stack. Tradeoff: execution needs Docker and first-time image downloads.
 - **Learner-approved:** improve local setup with one command that starts the UI and runner together. Docker-unavailable must leave Pattern simulation usable and must never trigger host execution.
-- **Learner-approved:** add a plain-English runtime explanation layer grounded in actual trace evidence. The learner delegated the safest condition-checking detail; this spec limits it to a small, tested grammar with an explicit unsupported fallback.
+- **Learner-approved:** add a plain-English runtime explanation layer grounded in actual trace evidence. The learner delegated the safest condition-checking detail; implementation limits it to an explicitly tested grammar with an unsupported fallback.
 - **Carried forward from `scope.md` and `prd.md`:** keep Pattern simulation distinct from execution; do not claim universal LeetCode support, automatic diagnosis of every bug, or ungrounded AI explanations.
 - **Useful uncertainty clarified:** Docker's purpose is to isolate submitted code, not to make the pattern simulator work. Removing the container would make actual execution less safe; Docker is therefore retained, while startup is simplified.
-- **Implementation detail:** use a Node built-in launcher instead of adding a process-management dependency. Verify clean startup and shutdown on Windows during `5-build`.
+- **Implemented:** use Node's built-in process and networking APIs to launch the UI and runner; no new dependency was added.
+- **Verified in the current Windows environment:** the existing services occupied default ports 5173/8765; the launcher selected 5174/8766, served the app, proxied a Java trace to the container, and closed both service ports when sent SIGINT. Docker-offline behavior is implemented using the existing 503 health response but was not simulated by stopping Docker.
 
 ### Open issues for the build
 

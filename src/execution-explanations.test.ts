@@ -82,7 +82,7 @@ describe("runtime step explanations", () => {
     });
     const current = event({ line: 3, sequence: 1, locals: previous.locals, heap: previous.heap });
     const explanation = describeRuntimeStep(source, current, previous);
-    expect(explanation).toContain("captured local values did not change");
+    expect(explanation).toContain("No supported local-value change was detected");
     expect(explanation).not.toContain("skipped");
   });
 

@@ -55,7 +55,12 @@ function plainValue(value: SnapshotValue | undefined, heap: HeapNode[], depth = 
     result = items.slice(0, 8).map((item) => plainValue(item, heap, depth + 1, seen));
     if (node.truncated || items.length > 8) (result as unknown[]).push("…");
   } else {
-    result = "[collection]";
+    const entries = node.entries ?? [];
+    result = entries.slice(0, 8).map(([key, item]) => [
+      plainValue(key, heap, depth + 1, seen),
+      plainValue(item, heap, depth + 1, seen),
+    ]);
+    if (node.truncated || entries.length > 8) (result as unknown[][]).push(["…", "…"]);
   }
   seen.delete(value.$ref);
   return result;
@@ -140,7 +145,7 @@ function explainChanges(previous: RuntimeEvent, current: RuntimeEvent): string {
     if (changes.length === MAX_EXPLANATION_CHANGES) break;
   }
   if (changes.length) return `Captured state changed: ${changes.join("; ")}.`;
-  return "The captured local values did not change between these runtime events.";
+  return "No supported local-value change was detected between these runtime events.";
 }
 
 export function describeRuntimeStep(source: string, current?: RuntimeEvent, previous?: RuntimeEvent): string {

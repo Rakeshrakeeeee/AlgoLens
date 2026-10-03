@@ -8,7 +8,8 @@
     "build": "tsc && vite build",
     "test": "vitest run",
     "preview": "vite preview",
-    "runner": "python runner/server.py"
+    "runner": "python runner/server.py",
+    "start:local": "node scripts/start-local.mjs"
   },
   "dependencies": {
     "react": "^19.1.0",

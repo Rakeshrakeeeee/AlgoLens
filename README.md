@@ -20,21 +20,17 @@ Docker Desktop uses a Linux VM (usually WSL2) on Windows. Keep Docker Desktop ru
 
 ### Start the app
 
-Open two PowerShell terminals in this directory.
-
-Terminal 1 — local runner:
+From the project folder, run:
 
 ```powershell
-npm run runner
+npm run start:local
 ```
 
-Terminal 2 — web interface:
+The launcher starts the web app and loopback runner together, prints the local app URL, and stops both when you press Ctrl+C. If the default local ports are occupied, it selects an available supported port and prints the actual URLs. Docker Desktop must be running for real code execution; without it, Pattern simulation remains usable and Code execution reports that the sandbox is offline.
 
-```powershell
-npm run dev
-```
+For debugging the processes separately, open two PowerShell terminals and run `npm run runner` and `npm run dev`.
 
-Open the Local URL printed by Vite, usually `http://localhost:5173/`. In the app, select **Code execution · Python + Java**, choose Python or Java, paste a `class Solution`, choose the detected method, enter its arguments as a JSON array, and select **Run and visualize**. You do not need a `main` method. Python also accepts a top-level function. Example Java:
+Open the local URL printed by the launcher, usually `http://localhost:5173/`. In the app, select **Code execution · Python + Java**, choose Python or Java, paste a `class Solution`, choose the detected method, enter its arguments as a JSON array, and select **Run and visualize**. You do not need a `main` method. Python also accepts a top-level function. Example Java:
 
 ```java
 class Solution {
@@ -145,7 +141,7 @@ Invoke-WebRequest -UseBasicParsing http://127.0.0.1:8765/api/health
 docker ps --all --filter "name=algolens-"
 ```
 
-The health endpoint should return `status: ok` while Docker's engine is running. After a trace completes, the `algolens-*` container list should be empty. The runner also removes stale containers it created when the service is restarted.
+The launcher prints the runner health URL; the endpoint defaults to port 8765 and may use another selected local port when that one is occupied. It returns `status: ok` while Docker's engine is running, or `status: offline` if only the sandbox is unavailable. After a trace completes, the `algolens-*` container list should be empty. The runner also removes stale containers it created when the service is restarted.
 
 ## Work completed and decisions
 

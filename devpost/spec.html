@@ -48,7 +48,7 @@
 <body>
 <main>
   <header>
-    <span class="tag">Technical spec · draft</span>
+    <span class="tag">Technical spec · approved</span>
     <h1>AlgoLens</h1>
     <p class="muted">A visual map of how the approved product requirements fit the existing app. The canonical planning document is <a href="./spec.md">spec.md</a>; this companion works offline.</p>
   </header>
@@ -107,15 +107,14 @@
       <div class="card"><h3>Workbench</h3><p><code>src/main.tsx</code> hosts the modeled pattern experience and app shell.</p></div>
       <div class="card"><h3>Runtime panel</h3><p><code>src/ExecutionPanel.tsx</code> sends supported code and inputs, then renders the returned trace.</p></div>
       <div class="card"><h3>Local runner</h3><p><code>runner/server.py</code> validates requests and manages one temporary container per run.</p></div>
-      <div class="card"><h3>Safe explanations</h3><p>A planned helper uses trace evidence and a small supported condition grammar; it never executes or guesses about unknown code.</p></div>
+      <div class="card"><h3>Safe explanations</h3><p>The local helper describes captured changes and only explains a skipped loop when its narrow condition grammar proves the reason. It never executes or guesses about unknown code.</p></div>
     </div>
   </section>
 
   <section>
     <h2>How to try the current app</h2>
-    <p>Until the planned one-command launcher is built, use two PowerShell terminals in the project root:</p>
-    <ol><li><code>npm run runner</code></li><li><code>npm run dev</code></li></ol>
-    <p>Open the Vite URL, normally <code>http://localhost:5173/</code>. Docker Desktop's Linux engine is required for actual code execution; the modeled simulator remains available without it.</p>
+    <p>From the project root, run <code>npm run start:local</code>. It starts the runner and web app together, prints their URLs, and closes both with Ctrl+C.</p>
+    <p>Open the printed local app URL, normally <code>http://localhost:5173/</code>. Docker Desktop's Linux engine is required for actual code execution; the modeled simulator remains available without it.</p>
     <p>Read the full decisions, data model, requirements mapping, and failure behavior in <a href="./spec.md">the Markdown spec</a>.</p>
   </section>
 </main>
@@ -124,7 +123,7 @@
     "The learner chooses Pattern simulation or Code execution in src/main.tsx. The interface keeps those modes visibly separate.",
     "For execution, src/ExecutionPanel.tsx detects/selects a supported method and checks the JSON arguments before sending them.",
     "The local API validates the request and asks Docker to run it in a fresh restricted container. It returns bounded events, values, results, or an explicit error.",
-    "The browser replays the immutable trace. The planned explanation helper describes only supported, evidence-backed changes; unsupported causes get an honest fallback."
+    "The browser replays the immutable trace. The explanation helper describes supported, evidence-backed changes; unsupported causes get an honest fallback."
   ];
   const output = document.getElementById("journey-step");
   document.querySelectorAll("[data-step]").forEach((button) => {
